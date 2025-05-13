@@ -172,7 +172,7 @@
           }
         }
       }
-    }
+    },
   },
   "components": {
     "schemas": {
@@ -240,7 +240,7 @@
           "format": "int64"
         }
       }
-    }
+    },
     },
     "securitySchemes": {
       "bearerAuth": {
