@@ -133,8 +133,8 @@
       }
     },
     "/pots": {
-     "get": {
-        "description": "Returns all plants from the system that the user has access to",
+      "get": {
+        "description": "Returns all pots from the system that the user has access to",
         "parameters": [
           {
             "name": "limit",
@@ -148,7 +148,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Plant responses",
+            "description": "Pot responses",
             "content": {
               "application/json": {
                 "schema": {
@@ -171,7 +171,7 @@
             }
           }
         }
-      },
+      }
     }
   },
   "components": {
@@ -212,26 +212,6 @@
           }
         ]
       },
-      "Pot": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Pot"
-          },
-          {
-            "required": [
-              "name"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
       "Error": {
         "required": [
           "error",
@@ -247,7 +227,20 @@
             "type": "string"
           }
         }
+      },
+      "Pot": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "description": "Identification number of the pot",
+          "type": "integer",
+          "format": "int64"
+        }
       }
+    }
     },
     "securitySchemes": {
       "bearerAuth": {
