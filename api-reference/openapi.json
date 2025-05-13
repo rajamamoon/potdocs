@@ -172,7 +172,7 @@
           }
         }
       }
-    },
+    }
   },
   "components": {
     "schemas": {
@@ -229,18 +229,18 @@
         }
       },
       "Pot": {
-      "type": "object",
-      "required": [
-        "id"
-      ],
-      "properties": {
-        "id": {
-          "description": "Identification number of the pot",
-          "type": "integer",
-          "format": "int64"
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "description": "Identification number of the pot",
+            "type": "integer",
+            "format": "int64"
+          }
         }
       }
-    },
     },
     "securitySchemes": {
       "bearerAuth": {
