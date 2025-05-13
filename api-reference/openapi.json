@@ -133,8 +133,8 @@
       }
     },
     "/pots": {
-      "get": {
-        "description": "Get all pots",
+     "get": {
+        "description": "Returns all plants from the system that the user has access to",
         "parameters": [
           {
             "name": "limit",
@@ -147,12 +147,21 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
+          "200": {
+            "description": "Plant responses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Pot"
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Unexpected error",
             "content": {
               "application/json": {
                 "schema": {
@@ -162,7 +171,7 @@
             }
           }
         }
-      }
+      },
     }
   },
   "components": {
