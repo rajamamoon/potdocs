@@ -81,6 +81,12 @@
         "api-reference/endpoint/create",
         "api-reference/endpoint/delete"
       ]
+    },
+    {
+      "group": "Pots",
+      "pages": [
+        "api-reference/pots/get"
+      ]
     }
   ],
   "footerSocials": {
