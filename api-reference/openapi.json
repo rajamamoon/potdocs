@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://ai.potential.com"
     }
   ],
   "security": [
@@ -74,17 +74,20 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Pot responses",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Plant"
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Unexpected error",
             "content": {
               "application/json": {
                 "schema": {
@@ -108,6 +111,38 @@
             "schema": {
               "type": "integer",
               "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Plant deleted",
+            "content": {}
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pots": {
+      "delete": {
+        "description": "Get all pots",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to return",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
