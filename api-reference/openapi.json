@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "https://ai.potential.com"
+      "url": "https://ai.potential.com/"
     }
   ],
   "security": [
@@ -133,7 +133,7 @@
       }
     },
     "/pots": {
-      "delete": {
+      "get": {
         "description": "Get all pots",
         "parameters": [
           {
@@ -191,6 +191,26 @@
           {
             "required": [
               "id"
+            ],
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Identification number of the plant",
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          }
+        ]
+      },
+      "Pot": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pot"
+          },
+          {
+            "required": [
+              "name"
             ],
             "type": "object",
             "properties": {
