@@ -85,7 +85,7 @@
     {
       "group": "Pots",
       "pages": [
-        "api-reference/pots/get"
+        "api-reference/pots/create"
       ]
     }
   ],
