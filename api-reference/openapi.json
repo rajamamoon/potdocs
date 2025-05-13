@@ -35,7 +35,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Plant responses",
             "content": {
               "application/json": {
                 "schema": {
