@@ -19,54 +19,31 @@
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant responses",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/auth/streaming": {
       "post": {
-        "description": "Creates a new plant in the store",
+        "summary": "Chat with AI bot",
+        "description": "Starts a chat session with an AI bot. Handles streaming responses, document context retrieval, chat history tracking, and can process documents in various formats.",
+        "operationId": "chatWithBot",
         "requestBody": {
-          "description": "Plant to add to the store",
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "type": "object",
+                "properties": {
+                  "botId": {
+                    "type": "string",
+                    "description": "The ID of the bot to interact with"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "The message to send to the bot"
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "Optional filename for context retrieval when file was previously uploaded"
+                  }
+                },
+                "required": ["botId", "message"]
               }
             }
           },
@@ -74,101 +51,359 @@
         },
         "responses": {
           "200": {
-            "description": "Pot responses",
+            "description": "Successful streaming response from the AI bot",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "type": "string",
+                  "description": "The AI bot's response as a streaming text"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors or missing required fields",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatValidationError" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error occurred during processing"
+          }
+        }
+      }
+    },
+    "/auth/streaming/audio": {
+      "post": {
+        "summary": "Transcribe audio to text",
+        "description": "Transcribes an uploaded audio file to text using the Whisper API. The audio file is deleted after processing.",
+        "operationId": "transcribeAudio",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "audio": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The audio file to transcribe"
                   }
-                }
+                },
+                "required": ["audio"]
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
+          "required": true
+        },
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Successfully transcribed audio",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/TranscriptionResponse"
                 }
               }
             }
+          },
+          "400": {
+            "description": "No audio file uploaded or invalid file format"
+          },
+          "500": {
+            "description": "Internal server error during audio processing"
           }
         }
       }
     },
-    "/pots": {
-      "get": {
-        "description": "Returns all pots from the system that the user has access to",
+    "/auth/streaming/upload": {
+      "post": {
+        "summary": "Upload a file",
+        "description": "Uploads a file to the server",
+        "operationId": "uploadFile",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The file to upload"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "File uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FileUploadResponse" }
+              }
+            }
+          },
+          "400": { "description": "No file uploaded or invalid file" },
+          "500": { "description": "Error uploading file" }
+        }
+      }
+    },
+    "/auth/streaming/delete/{filename}": {
+      "delete": {
+        "summary": "Delete a file",
+        "description": "Deletes a previously uploaded file from the server",
+        "operationId": "deleteFile",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+            "name": "filename",
+            "in": "path",
+            "description": "The name of the file to delete",
+            "required": true,
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
-            "description": "Pot responses",
+            "description": "File deleted successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Pot"
-                  }
+                  "$ref": "#/components/schemas/FileDeleteSuccessResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
+          "500": { "description": "Internal server error during file deletion" }
+        }
+      }
+    },
+    "/auth/streaming/texttovoice": {
+      "post": {
+        "summary": "Convert text to speech",
+        "description": "Converts provided text to an MP3 audio file using AWS Polly. The audio file is returned for download and then deleted from the server.",
+        "operationId": "textToSpeech",
+        "requestBody": {
+          "description": "The text to convert to speech",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TextToSpeechRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Text successfully converted to speech",
             "content": {
-              "application/json": {
+              "audio/mpeg": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "string",
+                  "format": "binary",
+                  "description": "The generated MP3 audio file"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal server error during text-to-speech conversion"
+          }
+        }
+      }
+    },
+    "/api/blogger": {
+      "post": {
+        "summary": "Generate a blog post",
+        "description": "Creates a blog post about the specified topic using a multi-agent approach with different specialized agents (structure, blogger, imager, SEO expert, formatter)",
+        "operationId": "generateBlogPost",
+        "requestBody": {
+          "description": "The blog topic",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BlogRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful streaming response with blog post content",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BlogPostResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error during blog generation"
+          }
+        }
+      }
+    },
+    "/api/scrape-and-summarize": {
+      "post": {
+        "summary": "Scrape and summarize web content",
+        "description": "Scrapes content from a URL and its subpages, and generates a summary of the content",
+        "operationId": "scrapeAndSummarize",
+        "requestBody": {
+          "description": "URL and optional selected URLs to scrape",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ScrapeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully scraped and summarized content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "List of URLs or summary content"
+                }
+              }
+            }
+          },
+          "400": { "description": "Unable to find any content" },
+          "500": { "description": "Internal server error during scraping" }
+        }
+      }
+    },
+    "/api/social-media": {
+      "post": {
+        "summary": "Generate social media posts",
+        "description": "Creates social media posts for specified platforms based on a given description",
+        "operationId": "generateSocialMediaPosts",
+        "requestBody": {
+          "description": "Description and platforms for social media posts",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SocialMediaRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully generated social media posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Generated social media posts"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error during post generation"
+          }
+        }
+      }
+    },
+    "/api/competitor-analysis": {
+      "post": {
+        "summary": "Perform competitor analysis",
+        "description": "Analyzes a competitor's website and provides insights and improvement suggestions",
+        "operationId": "competitorAnalysis",
+        "requestBody": {
+          "description": "URL and optional selected URLs to analyze",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompetitorAnalysisRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully analyzed competitor website",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompetitorAnalysisResponse"
+                }
+              }
+            }
+          },
+          "400": { "description": "Unable to find any content" },
+          "500": { "description": "Internal server error during analysis" }
+        }
+      }
+    },
+    "/api/product-marketing": {
+      "post": {
+        "summary": "Generate product marketing content",
+        "description": "Creates marketing content for a product based on a URL, selected URLs, and optional description",
+        "operationId": "productMarketing",
+        "requestBody": {
+          "description": "Parameters for generating product marketing content",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductMarketingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully generated marketing content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Marketing content including images and text"
+                }
+              }
+            }
+          },
+          "400": { "description": "Unable to find any content" },
+          "500": {
+            "description": "Internal server error during content generation"
+          }
+        }
+      }
+    },
+    "/api/press-release": {
+      "post": {
+        "summary": "Generate press release",
+        "description": "Creates a press release announcing a product from an organization in a specific location",
+        "operationId": "generatePressRelease",
+        "requestBody": {
+          "description": "Parameters for generating a press release",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PressReleaseRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully generated press release",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PressReleaseResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error during press release generation"
           }
         }
       }
@@ -177,9 +412,7 @@
   "components": {
     "schemas": {
       "Plant": {
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "type": "object",
         "properties": {
           "name": {
@@ -198,9 +431,7 @@
             "$ref": "#/components/schemas/Plant"
           },
           {
-            "required": [
-              "id"
-            ],
+            "required": ["id"],
             "type": "object",
             "properties": {
               "id": {
@@ -213,10 +444,7 @@
         ]
       },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+        "required": ["error", "message"],
         "type": "object",
         "properties": {
           "error": {
@@ -230,14 +458,193 @@
       },
       "Pot": {
         "type": "object",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "properties": {
           "id": {
             "description": "Identification number of the pot",
             "type": "integer",
             "format": "int64"
+          }
+        }
+      },
+      "ChatValidationError": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "description": "The field with the error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Error message description"
+                }
+              }
+            }
+          }
+        }
+      },
+      "TranscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "transcription": {
+            "type": "string",
+            "description": "The transcribed text from the audio file"
+          }
+        }
+      },
+      "FileUploadResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "description": "Success message" },
+          "filename": {
+            "type": "string",
+            "description": "Name of uploaded file"
+          }
+        }
+      },
+      "FileDeleteSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "description": "Success message" },
+          "filename": {
+            "type": "string",
+            "description": "The filename of the deleted file"
+          }
+        }
+      },
+      "TextToSpeechRequest": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The text to be converted to speech"
+          }
+        },
+        "required": ["text"]
+      },
+      "BlogRequest": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The topic to create a blog post about"
+          }
+        },
+        "required": ["message"]
+      },
+      "BlogPostResponse": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "object",
+            "description": "The generated blog content and social media posts"
+          }
+        }
+      },
+      "ScrapeRequest": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "description": "The base URL to scrape" },
+          "selectedUrls": {
+            "type": "string",
+            "description": "JSON string of URLs to include in the summary"
+          }
+        },
+        "required": ["url"]
+      },
+      "SocialMediaRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Description of the content to post about"
+          },
+          "platforms": {
+            "type": "string",
+            "description": "JSON string of social media platforms to generate posts for"
+          }
+        },
+        "required": ["description", "platforms"]
+      },
+      "CompetitorAnalysisRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The competitor's website URL"
+          },
+          "selectedUrls": {
+            "type": "string",
+            "description": "JSON string of specific URLs to analyze"
+          }
+        },
+        "required": ["url"]
+      },
+      "CompetitorAnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "analysis": {
+            "type": "string",
+            "description": "General analysis of the competitor"
+          },
+          "compAnalysis": {
+            "type": "object",
+            "description": "Detailed competitor analysis"
+          },
+          "improvements": {
+            "type": "object",
+            "description": "Suggested improvements"
+          }
+        }
+      },
+      "ProductMarketingRequest": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "description": "Product website URL" },
+          "selectedUrls": {
+            "type": "string",
+            "description": "JSON string of specific URLs to analyze"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional product description"
+          }
+        },
+        "required": ["url"]
+      },
+      "PressReleaseRequest": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "string",
+            "description": "The product being announced"
+          },
+          "organization": {
+            "type": "string",
+            "description": "The organization releasing the product"
+          },
+          "location": {
+            "type": "string",
+            "description": "The geographic location for the release"
+          }
+        },
+        "required": ["product", "organization", "location"]
+      },
+      "PressReleaseResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "object",
+            "description": "The press release content"
+          },
+          "posts": {
+            "type": "object",
+            "description": "Social media posts related to the press release"
           }
         }
       }

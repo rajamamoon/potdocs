@@ -31,27 +31,27 @@
       "url": "api-reference"
     }
   ],
-  "anchors": [
-  ],
+  "anchors": [],
   "navigation": [
     {
-      "group": "API Documentation",
+      "group": "Chatbot Streaming",
       "pages": [
-        "api-reference/introduction"
+        "api-reference/streaming/stream",
+        "api-reference/streaming/upload",
+        "api-reference/streaming/delete",
+        "api-reference/streaming/texttovoice",
+        "api-reference/streaming/voicetotext"
       ]
     },
     {
-      "group": "Endpoint Examples",
+      "group": "AI Tools",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
-      ]
-    },
-    {
-      "group": "Pots",
-      "pages": [
-        "api-reference/pots/get"
+        "api-reference/api/blogger",
+        "api-reference/api/competitor-analysis",
+        "api-reference/api/product-marketing",
+        "api-reference/api/scrape-and-summarize",
+        "api-reference/api/social-media",
+        "api-reference/api/press-release"
       ]
     }
   ],
